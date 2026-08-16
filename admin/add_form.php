@@ -9,10 +9,9 @@ if (isset($_POST['submit'])) {
     $adv = $_POST['adv'];
     $dat = $_POST['dat'];
 
-    // Remaining ab manual nahi, hamesha Total - Advance se server pe calculate hota hai (trust nahi karte client value pe)
     $remain = (is_numeric($total) && is_numeric($adv)) ? ($total - $adv) : 0;
 
-    // Amount (received) = Total - Remaining = Advance ke barabar hi ban jata hai
+   
     $amount = (is_numeric($total) && is_numeric($remain)) ? ($total - $remain) : 0;
 
     if (empty($name) || empty($service) || empty($total) || empty($adv) || empty($dat)) {
@@ -127,7 +126,6 @@ if (isset($_POST['submit'])) {
                 <input type="text" name="adv" id="adv" placeholder="Enter Advance Amount">
                 <br>
 
-                <!-- Remaining ab auto-calculate hota hai: Total - Advance -->
                 <input type="text" name="remain" id="remain" placeholder="Remaining Amount (auto)" readonly>
                 <br>
 
@@ -158,5 +156,4 @@ if (isset($_POST['submit'])) {
         advInput.addEventListener('input', calculateRemaining);
     </script>
 </body>
-
 </html>
