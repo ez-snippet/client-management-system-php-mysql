@@ -124,6 +124,19 @@ body {
     font-size: 14px;
 }
 
+.badge-remain {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.badge-remain.paid {
+    background: #d1fae5;
+    color: #065f46;
+}
+
 .product-img {
     width: 36px;
     height: 36px;

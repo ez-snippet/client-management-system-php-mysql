@@ -37,6 +37,17 @@ if ($res && $row = mysqli_fetch_assoc($res)) {
 // 5) Kitna paisa wapas aa gaya (Received = Total - Remaining)
 $totalReceived = $totalRevenue - $totalPending;
 
+// 6) Saal ke hisab se Revenue (2026, 2027... jaise jaise naya saal aayega khud add ho jayega)
+$yearlyRevenue = [];
+$res = mysqli_query($conn, "SELECT YEAR(months_date) AS yr, SUM(Total_Amount) AS total FROM clint 
+    WHERE months_date IS NOT NULL GROUP BY YEAR(months_date) ORDER BY yr DESC");
+if ($res) {
+    while ($row = mysqli_fetch_assoc($res)) {
+        $yearlyRevenue[] = $row;
+    }
+}
+$currentYear = date("Y");
+
 ?>
 
 <!DOCTYPE html>
@@ -174,6 +185,42 @@ $totalReceived = $totalRevenue - $totalPending;
                     </div>
                 </div>
 
+            </div>
+
+            <div class="card-table mt-4">
+                <div class="p-3">
+                    <h5 class="mb-3">Yearly Revenue</h5>
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Revenue</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (count($yearlyRevenue) > 0): ?>
+                                    <?php foreach ($yearlyRevenue as $yr): ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($yr['yr']) ?></td>
+                                            <td>Rs <?= number_format($yr['total']) ?></td>
+                                            <td>
+                                                <?php if ($yr['yr'] == $currentYear): ?>
+                                                    <span class="badge-remain paid">Current Year</span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="3" class="text-center">No revenue records yet.</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
 
