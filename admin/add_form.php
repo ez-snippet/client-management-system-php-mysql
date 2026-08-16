@@ -5,23 +5,29 @@ $message = "";
 if (isset($_POST['submit'])) {
     $name = $_POST['name'];
     $service = $_POST['options'];
-    $amount = $_POST['amount'];
     $total = $_POST['total'];
-    $remain = $_POST['remain'];
     $adv = $_POST['adv'];
     $dat = $_POST['dat'];
 
-    if (empty($name) || empty($service) || empty($amount) || empty($total) || empty($remain) || empty($adv) || empty($dat)) {
+    // Remaining ab manual nahi, hamesha Total - Advance se server pe calculate hota hai (trust nahi karte client value pe)
+    $remain = (is_numeric($total) && is_numeric($adv)) ? ($total - $adv) : 0;
+
+    // Amount (received) = Total - Remaining = Advance ke barabar hi ban jata hai
+    $amount = (is_numeric($total) && is_numeric($remain)) ? ($total - $remain) : 0;
+
+    if (empty($name) || empty($service) || empty($total) || empty($adv) || empty($dat)) {
         $message = "please Fill All fileds";
     }
     else{
-    $sql = "INSERT INTO clint(clint_name,clint_service, Amount , Total_Amount , Remaing_Amount, Adv_Amount,months_date) VALUES('$name', '$service', '$amount', '$total', '$remain', '$adv', '$dat')";
-    $result = mysqli_query($conn, $sql);
+    $stmt = mysqli_prepare($conn, "INSERT INTO clint(clint_name, clint_service, Amount, Total_Amount, Remaing_Amount, Adv_Amount, months_date) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    mysqli_stmt_bind_param($stmt, "ssdddds", $name, $service, $amount, $total, $remain, $adv, $dat);
+    $result = mysqli_stmt_execute($stmt);
     if (!$result) {
         $message = "please Enter correct fileds";
+    } else {
+        header("Location:view_form.php");
+        exit();
     }
-    header("Location:view_form.php");
-    exit();
     }
 }
 ?>
@@ -116,15 +122,15 @@ if (isset($_POST['submit'])) {
                     <option value="AI Chatbot Development">AI CHATBOT DEVELOPMENT</option>
                 </select>
                 <br>
-                <input type="text" name="amount" placeholder="Enter Amount">
-                <span id="e2"></span>
+                <input type="text" name="total" id="total" placeholder="Enter Total Amount">
                 <br>
-                <input type="text" name="total" placeholder="Enter Total Amount">
+                <input type="text" name="adv" id="adv" placeholder="Enter Advance Amount">
                 <br>
-                <input type="text" name="remain" placeholder="Remaining Amount">
+
+                <!-- Remaining ab auto-calculate hota hai: Total - Advance -->
+                <input type="text" name="remain" id="remain" placeholder="Remaining Amount (auto)" readonly>
                 <br>
-                <input type="text" name="adv" placeholder="Enter Advance Amount">
-                <br>
+
                 <input type="date" name="dat" placeholder="Select Date">
                 <p style="text-align: center; margin-top: 10px; color: red;"><?php echo $message ?></p>
                 <button type="submit" name="submit" id="btn">
@@ -136,6 +142,21 @@ if (isset($_POST['submit'])) {
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const totalInput = document.getElementById('total');
+        const advInput = document.getElementById('adv');
+        const remainInput = document.getElementById('remain');
+
+        function calculateRemaining() {
+            const total = parseFloat(totalInput.value) || 0;
+            const adv = parseFloat(advInput.value) || 0;
+            const remain = total - adv;
+            remainInput.value = isNaN(remain) ? '' : remain;
+        }
+
+        totalInput.addEventListener('input', calculateRemaining);
+        advInput.addEventListener('input', calculateRemaining);
+    </script>
 </body>
 
 </html>

@@ -1,6 +1,42 @@
-<?php 
+<?php
 include __DIR__ . "/../config/db.php";
 $current_page = basename($_SERVER['PHP_SELF']);
+
+/* ============ Revenue Calculations ============ */
+
+// 1) Total Revenue (sab clients ka Total_Amount jama)
+$totalRevenue = 0;
+$res = mysqli_query($conn, "SELECT SUM(Total_Amount) AS total FROM clint");
+if ($res && $row = mysqli_fetch_assoc($res)) {
+    $totalRevenue = $row['total'] ? $row['total'] : 0;
+}
+
+// 2) Is Mahine ka Revenue (current month)
+$thisMonthRevenue = 0;
+$res = mysqli_query($conn, "SELECT SUM(Total_Amount) AS total FROM clint 
+    WHERE MONTH(months_date) = MONTH(CURDATE()) AND YEAR(months_date) = YEAR(CURDATE())");
+if ($res && $row = mysqli_fetch_assoc($res)) {
+    $thisMonthRevenue = $row['total'] ? $row['total'] : 0;
+}
+
+// 3) September ka Revenue (is saal ka September)
+$septRevenue = 0;
+$res = mysqli_query($conn, "SELECT SUM(Total_Amount) AS total FROM clint 
+    WHERE MONTH(months_date) = 9 AND YEAR(months_date) = YEAR(CURDATE())");
+if ($res && $row = mysqli_fetch_assoc($res)) {
+    $septRevenue = $row['total'] ? $row['total'] : 0;
+}
+
+// 4) Market mein kitna paisa phasa hai (Remaining Amount ka total)
+$totalPending = 0;
+$res = mysqli_query($conn, "SELECT SUM(Remaing_Amount) AS total FROM clint");
+if ($res && $row = mysqli_fetch_assoc($res)) {
+    $totalPending = $row['total'] ? $row['total'] : 0;
+}
+
+// 5) Kitna paisa wapas aa gaya (Received = Total - Remaining)
+$totalReceived = $totalRevenue - $totalPending;
+
 ?>
 
 <!DOCTYPE html>
@@ -70,6 +106,75 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     </a>
                 </li>
             </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-grow-1 p-4">
+            <h4 class="mb-4">Revenue Overview</h4>
+
+            <div class="row g-3">
+
+                <div class="col-md-4 col-sm-6">
+                    <div class="stat-card d-flex align-items-center gap-3">
+                        <div class="icon bg-revenue">
+                            <i class="fa-solid fa-sack-dollar"></i>
+                        </div>
+                        <div>
+                            <div class="label">Total Revenue</div>
+                            <div class="value">Rs <?= number_format($totalRevenue) ?></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-sm-6">
+                    <div class="stat-card d-flex align-items-center gap-3">
+                        <div class="icon bg-products">
+                            <i class="fa-solid fa-calendar-days"></i>
+                        </div>
+                        <div>
+                            <div class="label">This Month Revenue</div>
+                            <div class="value">Rs <?= number_format($thisMonthRevenue) ?></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 col-sm-6">
+                    <div class="stat-card d-flex align-items-center gap-3">
+                        <div class="icon bg-orders">
+                            <i class="fa-solid fa-leaf"></i>
+                        </div>
+                        <div>
+                            <div class="label">September Revenue</div>
+                            <div class="value">Rs <?= number_format($septRevenue) ?></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-sm-6">
+                    <div class="stat-card d-flex align-items-center gap-3">
+                        <div class="icon bg-pending">
+                            <i class="fa-solid fa-hourglass-half"></i>
+                        </div>
+                        <div>
+                            <div class="label">Pending in Market</div>
+                            <div class="value">Rs <?= number_format($totalPending) ?></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-sm-6">
+                    <div class="stat-card d-flex align-items-center gap-3">
+                        <div class="icon bg-received">
+                            <i class="fa-solid fa-hand-holding-dollar"></i>
+                        </div>
+                        <div>
+                            <div class="label">Total Received</div>
+                            <div class="value">Rs <?= number_format($totalReceived) ?></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
 
     </div>
